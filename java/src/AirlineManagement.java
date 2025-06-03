@@ -286,12 +286,10 @@ public class AirlineManagement {
                   System.out.println(".........................");
                   System.out.println("9. Log out");
                   switch (readChoice()){
-                     case 1: feature1(esql); break;
-                     case 2: feature2(esql); break;
-                     case 3: feature3(esql); break;
-                     case 4: feature4(esql); break;
-                     case 5: feature5(esql); break;
-                     case 6: feature6(esql); break;
+                     case 1: ScheduleFromFlightNum(esql); break;
+                     case 2: GetSeats(esql); break;
+                     case 3: OnTime(esql); break;
+                     case 4: FlightsOfTheDay(esql); break;
 
                      case 9: usermenu = false; break;
                      default : System.out.println("Unrecognized choice!"); break;
@@ -460,6 +458,11 @@ public class AirlineManagement {
 
 // Rest of the functions definition go in here
 
+    /*
+    * Management Features
+    **/
+
+
    public static void ScheduleFromFlightNum(AirlineManagement esql) {
       try {
          System.out.println("Enter Flight Number: ");
@@ -613,12 +616,6 @@ public class AirlineManagement {
          System.err.println("Error in FlightsOfTheDay: "+  e.getMessage());
       }
    }
-   public static void feature1(AirlineManagement esql) {}
-   public static void feature2(AirlineManagement esql) {}
-   public static void feature3(AirlineManagement esql) {}
-   public static void feature4(AirlineManagement esql) {}
-   public static void feature5(AirlineManagement esql) {}
-   public static void feature6(AirlineManagement esql) {}
 
    /*
     * Customer Features
@@ -628,18 +625,20 @@ public class AirlineManagement {
    public static void FindFlightsOnDate(AirlineManagement esql){
       try {
          System.out.print("\tEnter departure city: ");
-         String depCity = in.readline();
+         String depCity = in.readLine();
          System.out.print("\tEnter arrival city: ");
-         String arrCity = in.readline();
+         String arrCity = in.readLine();
          System.out.print("\tEnter flight date (YYYY-MM-DD): ");
-         String flightDate = in.readline();
+         String flightDate = in.readLine();
 
          String query = String.format(
             "SELECT s.DepartureTime, s.ArrivalTime, fi.NumOfStops, " + 
             "ROUND(100.0 * SUM(CASE WHEN fi.DepartedOnTime AND fi.ArrivedOnTime THEN 1 ELSE 0 END) / COUNT(*), 2) AS OnTimePercentage " + 
-            "FROM Flight f JOIN Schedule s ON f.FlightNumber = s.FlightNumber " + 
+            "FROM Flight f " + 
+            "JOIN Schedule s ON f.FlightNumber = s.FlightNumber " + 
+            "JOIN FlightInstance fi ON f.FlightNumber = fi.FlightNumber " + 
             "WHERE f.DepartureCity = '%s' AND f.ArrivalCity = '%s' AND fi.FlightDate = '%s' " + 
-            "GROUP BY s.DepartureTime, s.ArrivalTime, fi.NumeOfStops", 
+            "GROUP BY s.DepartureTime, s.ArrivalTime, fi.NumOfStops", 
             depCity, arrCity, flightDate
          );
 
@@ -653,7 +652,7 @@ public class AirlineManagement {
    public static void GetTicketCost(AirlineManagement esql){
       try {
          System.out.print("\tEnter flight number: ");
-         String flightNumber = in.readline();
+         String flightNumber = in.readLine();
          String query = 
             "Select TicketCost FROM FlightInstance WHERE FlightNumber = '" + flightNumber + "'";
 
@@ -667,7 +666,7 @@ public class AirlineManagement {
    public static void GetAirplaneType(AirlineManagement esql) {
       try {
          System.out.print("\tEnter flight number: ");
-         String flightNumber = in.readline();
+         String flightNumber = in.readLine();
 
          String query =  
          "SELECT p.make, p.Model from Flight f " + 
@@ -685,15 +684,16 @@ public class AirlineManagement {
    public static void MakeReservation(AirlineManagement esql) {
       try {
          System.out.print("\tEnter customer ID: ");
+         String customerID = in.readLine();
          System.out.print("\tEnter flight instance ID: ");
-         String flightInstanceID = in.readline();
+         String flightInstanceID = in.readLine();
 
          String checkSeats = 
          "SELECT SeatsTotal, SeatsSold " +
          "FROM FlightInstance " +
          "WHERE FlightInstance = " + flightInstanceID;
 
-         List<List<String>> result = esql.executeQueryAndReturnResults(checkSeats);
+         List<List<String>> result = esql.executeQueryAndReturnResult(checkSeats);
 
          int total = Integer.parseInt(result.get(0).get(0));
          int sold = Integer.parseInt(result.get(0).get(0));
@@ -706,7 +706,7 @@ public class AirlineManagement {
             reservationID, customerID, flightInstanceID, status
          );
 
-         esql.exectureUpdate(insert);
+         esql.executeUpdate(insert);
          System.out.println("Reservation " + status + " created.");
       } catch(Exception e) {
          System.err.println(e.getMessage());
@@ -720,8 +720,10 @@ public class AirlineManagement {
       try {
          System.out.print("\tEnter plane ID: ");
          String planeID = in.readLine();
-         System.out.print("\tEnter repair start date (YYYY-MM-DD): ");
+         System.out.print("\tEnter first date (YYYY-MM-DD): ");
          String start = in.readLine();
+         System.out.print("\tEnter last date (YYYY-MM-DD): ");
+         String end = in.readLine();
 
          String query = String.format(
             "SELECT RepairDate, RepairCode " +
@@ -768,7 +770,7 @@ public class AirlineManagement {
             "VALUES (%s, '%s', '%s', '%s', '%s')",
             esql.getCurrSeqVal("Repair_seq"), planeID, repairCode, repairDate, techID
          );
-         int rowCount = esql.executeQueryAndPrintResult(query);
+         int rowCount = esql.executeQueryAndPrintResult(insert);
          System.out.println("Total row(s): " + rowCount);
       } catch(Exception e) {
          System.err.println(e.getMessage());
@@ -778,7 +780,7 @@ public class AirlineManagement {
    /*
     * Pilot Features
     **/
-   public static void SubmitMaintenanceRequest(EmbeddedSSQL esql) {
+   public static void SubmitMaintenanceRequest(AirlineManagement esql) {
       try {
          System.out.print("\tEnter plane ID: ");
          String planeID = in.readLine();
