@@ -14,6 +14,8 @@
 import java.sql.DriverManager;
 import java.sql.Connection;
 import java.sql.Statement;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -24,6 +26,9 @@ import java.io.InputStreamReader;
 import java.util.List;
 import java.util.ArrayList;
 import java.lang.Math;
+
+import java.sql.Date;
+import java.time.LocalDate;
 
 /**
  * This class defines a simple embedded SQL utility class that is designed to
@@ -264,7 +269,6 @@ public class AirlineManagement {
                default : System.out.println("Unrecognized choice!"); break;
             }//end switch
             if (authorisedUser != null) {
-              String userID = authorisedUser[0];
               String role = authorisedUser[1];
               boolean usermenu = true;
               while(usermenu) {
@@ -272,43 +276,64 @@ public class AirlineManagement {
                 System.out.println("---------");
 
                 //**the following functionalities should only be able to be used by Management**
-                System.out.println("1. View Flights");
-                System.out.println("2. View Flight Seats");
-                System.out.println("3. View Flight Status");
-                System.out.println("4. View Flights of the day");  
-                System.out.println("5. View Full Order ID History");
-                System.out.println(".........................");
-                System.out.println(".........................");
+                if (role.equals("Management")) {
+                  System.out.println("1. View Flight Schedule");
+                  System.out.println("2. View Flight Seats");
+                  System.out.println("3. View Flight Status");
+                  System.out.println("4. View Flights of the day");  
+                  System.out.println("5. View Full Order ID History");
+                  System.out.println(".........................");
+                  System.out.println(".........................");
+                  System.out.println("9. Log out");
+                  switch (readChoice()){
+                     case 1: ScheduleFromFlightNum(esql); break;
+                     case 2: GetSeats(esql); break;
+                     case 3: OnTime(esql); break;
+                     case 4: FlightsOfTheDay(esql); break;
 
+                     case 9: usermenu = false; break;
+                     default : System.out.println("Unrecognized choice!"); break;
+                  }
+                } else if (role.equals("Customer")) {
                 //**the following functionalities should only be able to be used by customers**
-                System.out.println("10. Search Flights");
-                System.out.println(".........................");
-                System.out.println(".........................");
+                  System.out.println("1. Search Flights");
+                  System.out.println("2. Get Flight Ticket Cost");
+                  System.out.println("3. Get Your Flight Airplane Type");
+                  System.out.println("4. Make Flight Reservation");
+                  System.out.println("9. Log out");
+                  switch (readChoice()){
+                     case 1: FindFlightsOnDate(esql); break;
+                     case 2: GetTicketCost(esql); break;
+                     case 3: GetAirplaneType(esql); break;
+                     case 4: MakeReservation(esql); break;
 
-                //**the following functionalities should ony be able to be used by Pilots**
-                System.out.println("15. Maintenace Request");
-                System.out.println(".........................");
-                System.out.println(".........................");
+                     case 9: usermenu = false; break;
+                     default : System.out.println("Unrecognized choice!"); break;
+                  }
+                } else if (role.equals("Pilot")) {
+                  System.out.println("1. Send Maintenance Request");
+                  System.out.println("9. Log out");
+                  switch (readChoice()){
+                     case 1: SubmitMaintenanceRequest(esql); break;
 
-               //**the following functionalities should ony be able to be used by Technicians**
-                System.out.println(".........................");
-                System.out.println(".........................");
+                     case 9: usermenu = false; break;
+                     default : System.out.println("Unrecognized choice!"); break;
+                  }
+                } else if (role.equals("Maintenance")) {
+                  System.out.println("1. Get Repair History");
+                  System.out.println("2. Get Pilot Maintenance Requests");
+                  System.out.println("3. Mark A Repair As Completed");
+                  System.out.println("9. Log out");
+                  switch (readChoice()){
+                     case 1: GetRepairsForPlane(esql); break;
+                     case 2: GetPilotRequests(esql); break;
+                     case 3: LogRepair(esql); break;
 
-                System.out.println("20. Log out");
-                switch (readChoice()){
-                   case 1: feature1(esql); break;
-                   case 2: feature2(esql); break;
-                   case 3: feature3(esql); break;
-                   case 4: feature4(esql); break;
-                   case 5: feature5(esql); break;
-                   case 6: feature6(esql); break;
-
-
-
-
-                   case 20: usermenu = false; break;
-                   default : System.out.println("Unrecognized choice!"); break;
+                     case 9: usermenu = false; break;
+                     default : System.out.println("Unrecognized choice!"); break;
+                  }
                 }
+
               }
             }
          }//end while
@@ -334,7 +359,6 @@ public class AirlineManagement {
          "              User Interface      	               \n" +
          "*******************************************************\n");
    }//end Greeting
-
    /*
     * Reads the users choice given from the keyboard
     * @int
@@ -434,13 +458,352 @@ public class AirlineManagement {
 
 // Rest of the functions definition go in here
 
-   public static void feature1(AirlineManagement esql) {}
-   public static void feature2(AirlineManagement esql) {}
-   public static void feature3(AirlineManagement esql) {}
-   public static void feature4(AirlineManagement esql) {}
-   public static void feature5(AirlineManagement esql) {}
-   public static void feature6(AirlineManagement esql) {}
-  
+    /*
+    * Management Features
+    **/
+
+
+   public static void ScheduleFromFlightNum(AirlineManagement esql) {
+      try {
+         System.out.println("Enter Flight Number: ");
+         String flNum = in.readLine();
+
+         String query = String.format(
+            "SELECT DayOfWeek, DepartureTime, ArrivalTime FROM schedule WHERE FlightNumber = '%s';",
+            flNum
+         );
+
+         List<List<String>> results = esql.executeQueryAndReturnResult(query);
+
+         if (results.isEmpty()) {
+            System.out.println("No schdule found for flight number " + flNum);
+         } else {
+            for (List<String> row : results) {
+               System.out.println(row);
+            }
+         }
+      } catch (Exception e) {
+         System.err.println("Error in ScheduleFromFlightNum: " + e.getMessage());
+      }
+   }
+   public static void GetSeats(AirlineManagement esql) {
+      try {
+         System.out.println("Enter Flight: ");
+         String flName = in.readLine();
+         System.out.println("Enter Flight Date(YYYY-MM-DD): ");
+         String dateInput = in.readLine().trim(); //get string of date
+         LocalDate localDate = LocalDate.parse(dateInput); //parse string to LocalDate
+         Date sqlDate = Date.valueOf(localDate); //convert to java.sql.Date
+
+         System.out.println("Do you want to view:");
+         System.out.println("(1) Number of Seats Sold");
+         System.out.println("(2) Number of Seats Remaining");
+
+         switch (readChoice()) {
+            case 1: {
+               String query = String.format(
+                  "SELECT SeatsSold FROM FlightInstance WHERE FlightNumber = '%s' AND FlightDate = '%s';",
+                  flName, sqlDate
+               );
+               List<List<String>> results = esql.executeQueryAndReturnResult(query);
+               if (results.isEmpty()) {
+                  System.out.println("No matching records found.");
+               } else {
+                  System.out.println("Seats Sold: " + results.get(0).get(0));
+               }
+               break;
+            }
+            case 2: {
+               String query = String.format(
+                  "SELECT SeatsTotal - SeatsSold FROM FlightInstance WHERE FlightNumber = '%s' AND FlightDate = '%s';", 
+                  flName, sqlDate
+                  );
+                  List<List<String>> results = esql.executeQueryAndReturnResult(query);
+                  if (results.isEmpty()) {
+                     System.out.println("No matching records found.");
+                  } else {
+                     System.out.println("Seats Remaining: " + results.get(0).get(0));
+                  }
+                  break;
+            }
+            default:
+            System.out.println("Invalid choice.");
+            break;
+         }
+      } catch (Exception e) {
+         System.err.println("Error in GetSeats: " + e.getMessage());
+      }
+   }
+   public static void OnTime(AirlineManagement esql) {
+      try {
+         System.out.println("Enter Flight: ");
+         String flName = in.readLine();
+         System.out.println("Enter Flight Date(YYYY-MM-DD): ");
+         String dateInput = in.readLine().trim(); //get string of date
+         LocalDate localDate = LocalDate.parse(dateInput); //parse string to LocalDate
+         Date sqlDate = Date.valueOf(localDate); //convert to java.sql.Date
+
+         System.out.println("Do you want to view:");
+         System.out.println("(1) Departure");
+         System.out.println("(2) Arrival");
+
+         switch (readChoice()) {
+            case 1: {
+               String query = String.format(
+                  "SELECT DepartedOnTime FROM FlightInstance WHERE FlightNumber = '%s' AND FlightDate = '%s';",
+                  flName, sqlDate
+               );
+               List<List<String>> results = esql.executeQueryAndReturnResult(query);
+               if (results.isEmpty()) {
+                  System.out.println("No matching records found.");
+               } else {
+                  String departedStr = results.get(0).get(0);
+                  if (departedStr.equals("f")) {
+                     System.out.println("Did not depart on time");
+                  } else if (departedStr.equals("t")) {
+                     System.out.println("Departed on time");
+                  } else {
+                     System.out.println("Unknown departure status: " + departedStr);
+                  }
+               }
+               break;
+            }
+            case 2: {
+               String query = String.format(
+                  "SELECT ArrivedOnTime FROM FlightInstance WHERE FlightNumber = '%s' AND FlightDate = '%s';",
+                  flName, sqlDate
+               );
+               List<List<String>> results = esql.executeQueryAndReturnResult(query);
+               if (results.isEmpty()) {
+                  System.out.println("No matching records found.");
+               } else {
+                  String arrivedStr = results.get(0).get(0);
+                  if (arrivedStr.equals("f")) {
+                     System.out.println("Did not arrive on time");
+                  } else if (arrivedStr.equals("t")) {
+                     System.out.println("Arrived on time");
+                  } else {
+                     System.out.println("Unknown arrival status: " + arrivedStr);
+                  }
+               }
+               break;
+            }
+         }
+      } catch (Exception e) {
+         System.err.println("Error in GetSeats: " + e.getMessage());
+      }
+   }
+   public static void FlightsOfTheDay(AirlineManagement esql) {
+      try {
+         System.out.println("Enter Flight Date(YYYY-MM-DD): ");
+         String dateInput = in.readLine().trim(); //get string of date
+         LocalDate localDate = LocalDate.parse(dateInput); //parse string to LocalDate
+         Date sqlDate = Date.valueOf(localDate); //convert to java.sql.Date
+
+         String query = String.format(
+            "SELECT FlightNumber FROM FlightInstance WHERE FlightDate = '%s';", 
+            sqlDate
+            );
+         List<List<String>> results = esql.executeQueryAndReturnResult(query);
+         if (results.isEmpty()) {
+            System.out.println("No matching records found.");
+         } else {
+            for (List<String> row : results) {
+               System.out.println("Flight: "+ row);
+            }
+         }
+      } catch (Exception e) {
+         System.err.println("Error in FlightsOfTheDay: "+  e.getMessage());
+      }
+   }
+
+   /*
+    * Customer Features
+    **/
+
+// Return departure and arrival time, number of stops scheduled, and on-time record (as a percentage)
+   public static void FindFlightsOnDate(AirlineManagement esql){
+      try {
+         System.out.print("\tEnter departure city: ");
+         String depCity = in.readLine();
+         System.out.print("\tEnter arrival city: ");
+         String arrCity = in.readLine();
+         System.out.print("\tEnter flight date (YYYY-MM-DD): ");
+         String flightDate = in.readLine();
+
+         String query = String.format(
+            "SELECT s.DepartureTime, s.ArrivalTime, fi.NumOfStops, " + 
+            "ROUND(100.0 * SUM(CASE WHEN fi.DepartedOnTime AND fi.ArrivedOnTime THEN 1 ELSE 0 END) / COUNT(*), 2) AS OnTimePercentage " + 
+            "FROM Flight f " + 
+            "JOIN Schedule s ON f.FlightNumber = s.FlightNumber " + 
+            "JOIN FlightInstance fi ON f.FlightNumber = fi.FlightNumber " + 
+            "WHERE f.DepartureCity = '%s' AND f.ArrivalCity = '%s' AND fi.FlightDate = '%s' " + 
+            "GROUP BY s.DepartureTime, s.ArrivalTime, fi.NumOfStops", 
+            depCity, arrCity, flightDate
+         );
+
+         int rowCount = esql.executeQuery(query);
+         System.out.println("Total row(s): " + rowCount);
+      } catch (Exception e) {
+         System.err.println(e.getMessage());
+      }
+   }
+
+   public static void GetTicketCost(AirlineManagement esql){
+      try {
+         System.out.print("\tEnter flight number: ");
+         String flightNumber = in.readLine();
+         String query = 
+            "Select TicketCost FROM FlightInstance WHERE FlightNumber = '" + flightNumber + "'";
+
+         int rowCount = esql.executeQueryAndPrintResult(query);
+         System.out.println("Total row(s): " + rowCount);
+      } catch (Exception e) {
+         System.err.println(e.getMessage());
+      }
+   }
+
+   public static void GetAirplaneType(AirlineManagement esql) {
+      try {
+         System.out.print("\tEnter flight number: ");
+         String flightNumber = in.readLine();
+
+         String query =  
+         "SELECT p.make, p.Model from Flight f " + 
+         "JOIN Plane p ON f.PlaneID = p.PlaneID " +
+         "WHERE f.FlightNumber = '" + flightNumber + "'";
+
+         int rowCount = esql.executeQueryAndPrintResult(query);
+
+         System.out.println("Total row(s): " + rowCount);
+      } catch (Exception e) {
+         System.err.println(e.getMessage());
+      }
+   } 
+
+   public static void MakeReservation(AirlineManagement esql) {
+      try {
+         System.out.print("\tEnter customer ID: ");
+         String customerID = in.readLine();
+         System.out.print("\tEnter flight instance ID: ");
+         String flightInstanceID = in.readLine();
+
+         String checkSeats = 
+         "SELECT SeatsTotal, SeatsSold " +
+         "FROM FlightInstance " +
+         "WHERE FlightInstance = " + flightInstanceID;
+
+         List<List<String>> result = esql.executeQueryAndReturnResult(checkSeats);
+
+         int total = Integer.parseInt(result.get(0).get(0));
+         int sold = Integer.parseInt(result.get(0).get(0));
+         String status = sold < total ? "reserved" : "waitlisted";
+
+         String reservationID = "R" + System.currentTimeMillis();
+         String insert = String.format(
+            "INSERT INTO Reservation (ReservationID, CustomerID, FlightInstanceID, Status) " + 
+            "VALUES ('%s', %s, %s, '%s')",
+            reservationID, customerID, flightInstanceID, status
+         );
+
+         esql.executeUpdate(insert);
+         System.out.println("Reservation " + status + " created.");
+      } catch(Exception e) {
+         System.err.println(e.getMessage());
+      }
+   }
+
+   /*
+    * Technician Features
+    **/
+   public static void GetRepairsForPlane(AirlineManagement esql) {
+      try {
+         System.out.print("\tEnter plane ID: ");
+         String planeID = in.readLine();
+         System.out.print("\tEnter first date (YYYY-MM-DD): ");
+         String start = in.readLine();
+         System.out.print("\tEnter last date (YYYY-MM-DD): ");
+         String end = in.readLine();
+
+         String query = String.format(
+            "SELECT RepairDate, RepairCode " +
+            "FROM Repair " +
+            "WHERE PlaneID = '%s' AND RepairDate BETWEEN '%s' AND '%s'",
+            planeID, start, end
+         );
+         int rowCount = esql.executeQueryAndPrintResult(query);
+         System.out.println("Total row(s): " + rowCount);
+      } catch(Exception e) {
+         System.err.println(e.getMessage());
+      }
+   }
+
+   public static void GetPilotRequests(AirlineManagement esql) {
+      try {
+         System.out.print("\tEnter pilot ID: ");
+         String pilotID = in.readLine();
+
+         String query =
+            "SELECT RepairDate, RepairCode, PlaneID " +
+            "FROM MaintenanceRequest " + 
+            "WHERE PilotID = '" + pilotID + "'";
+         int rowCount = esql.executeQueryAndPrintResult(query);
+         System.out.println("Total row(s): " + rowCount);
+      } catch(Exception e) {
+         System.err.println(e.getMessage());
+      }
+   }
+
+   public static void LogRepair(AirlineManagement esql) {
+      try {
+         System.out.print("\tEnter plane ID: ");
+         String planeID = in.readLine();
+         System.out.print("\tEnter repair code: ");
+         String repairCode = in.readLine();
+         System.out.print("\tEnter repair date (YYYY-MM-DD): ");
+         String repairDate = in.readLine();
+         System.out.print("\tEnter technician ID: ");
+         String techID = in.readLine();
+
+         String insert = String.format(
+            "INSERT INTO Repair (RepairID, PlaneID, RepairCode, RepairDate, TechnicianID) " + 
+            "VALUES (%s, '%s', '%s', '%s', '%s')",
+            esql.getCurrSeqVal("Repair_seq"), planeID, repairCode, repairDate, techID
+         );
+         int rowCount = esql.executeQueryAndPrintResult(insert);
+         System.out.println("Total row(s): " + rowCount);
+      } catch(Exception e) {
+         System.err.println(e.getMessage());
+      }
+   }
+
+   /*
+    * Pilot Features
+    **/
+   public static void SubmitMaintenanceRequest(AirlineManagement esql) {
+      try {
+         System.out.print("\tEnter plane ID: ");
+         String planeID = in.readLine();
+         System.out.print("\tEnter repair code: ");
+         String repairCode = in.readLine();
+         System.out.print("\tEnter pilot ID: ");
+         String pilotID = in.readLine();
+
+         LocalDate today = LocalDate.now();
+         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+         String requestDate = today.format(formatter);
+
+         String insert = String.format("INSERT INTO MaintenanceRequest (RequestID, PlaneID, RepairCode, RequestCode, RequestDate, PilotID) " + 
+         "VALUES (%s, '%s', '%s', '%', '%s', '%s')",
+         esql.getCurrSeqVal("Request_seq"), planeID, repairCode, requestDate, pilotID
+         );
+
+         esql.executeUpdate(insert);
+         System.out.println("Maintenance request submitted.");
+      } catch(Exception e) {
+         System.err.println(e.getMessage());
+      }
+   }
 
 
 }//end AirlineManagement
