@@ -280,79 +280,58 @@ public class AirlineManagement {
                   System.out.println("5. View Full Order ID History");
                   System.out.println(".........................");
                   System.out.println(".........................");
-                }
-                
+                  System.out.println("9. Log out");
+                  switch (readChoice()){
+                     case 1: feature1(esql); break;
+                     case 2: feature2(esql); break;
+                     case 3: feature3(esql); break;
+                     case 4: feature4(esql); break;
+                     case 5: feature5(esql); break;
+                     case 6: feature6(esql); break;
 
+                     case 9: usermenu = false; break;
+                     default : System.out.println("Unrecognized choice!"); break;
+                  }
+                } else if (role.equals("Customer")) {
                 //**the following functionalities should only be able to be used by customers**
-                if (role.equals("Customer")) {
-                System.out.println("1. Search Flights");
-                System.out.println(".........................");
-                System.out.println(".........................");
-               }
+                  System.out.println("1. Search Flights");
+                  System.out.println("2. Get Flight Ticket Cost");
+                  System.out.println("3. Get Your Flight Airplane Type");
+                  System.out.println("4. Make Flight Reservation");
+                  System.out.println("9. Log out");
+                  switch (readChoice()){
+                     case 1: FindFlightsOnDate(esql); break;
+                     case 2: GetTicketCost(esql); break;
+                     case 3: GetAirplaneType(esql); break;
+                     case 4: MakeReservation(esql); break;
 
-                //**the following functionalities should ony be able to be used by Pilots**
-                if (role.equals("Pilot")) {
-                  System.out.println("1. Maintenace Request");
-                  System.out.println(".........................");
-                  System.out.println(".........................");
-                }
-                
+                     case 9: usermenu = false; break;
+                     default : System.out.println("Unrecognized choice!"); break;
+                  }
+                } else if (role.equals("Pilot")) {
+                  System.out.println("1. Send Maintenance Request");
+                  System.out.println("9. Log out");
+                  switch (readChoice()){
+                     case 1: SubmitMaintenanceRequest(esql); break;
 
-               //**the following functionalities should ony be able to be used by Technicians**
-               if (role.equals("Technician")) {
-                  System.out.println(".........................");
-                  System.out.println(".........................");
-               }
-                
-                System.out.println("20. Log out");
-                if (role.equals("Management")) {
-                  switch (readChoice()){
-                     case 1: feature1(esql); break;
-                     case 2: feature2(esql); break;
-                     case 3: feature3(esql); break;
-                     case 4: feature4(esql); break;
-                     case 5: feature5(esql); break;
-                     case 6: feature6(esql); break;
-                     case 20: usermenu = false; break;
+                     case 9: usermenu = false; break;
                      default : System.out.println("Unrecognized choice!"); break;
-                }
-               }
-                if (role.equals("Customer")) {
+                  }
+                } else if (role.equals("Maintenance")) {
+                  System.out.println("1. Get Repair History");
+                  System.out.println("2. Get Pilot Maintenance Requests");
+                  System.out.println("3. Mark A Repair As Completed");
+                  System.out.println("9. Log out");
                   switch (readChoice()){
-                     case 1: feature1(esql); break;
-                     case 2: feature2(esql); break;
-                     case 3: feature3(esql); break;
-                     case 4: feature4(esql); break;
-                     case 5: feature5(esql); break;
-                     case 6: feature6(esql); break;
-                     case 20: usermenu = false; break;
+                     case 1: GetRepairsForPlane(esql); break;
+                     case 2: GetPilotRequests(esql); break;
+                     case 3: LogRepair(esql); break;
+
+                     case 9: usermenu = false; break;
                      default : System.out.println("Unrecognized choice!"); break;
+                  }
                 }
-               }
-                if (role.equals("Pilot")) {
-                  switch (readChoice()){
-                     case 1: feature1(esql); break;
-                     case 2: feature2(esql); break;
-                     case 3: feature3(esql); break;
-                     case 4: feature4(esql); break;
-                     case 5: feature5(esql); break;
-                     case 6: feature6(esql); break;
-                     case 20: usermenu = false; break;
-                     default : System.out.println("Unrecognized choice!"); break;
-                }
-               }
-                if (role.equals("Technician")) {
-                  switch (readChoice()){
-                     case 1: feature1(esql); break;
-                     case 2: feature2(esql); break;
-                     case 3: feature3(esql); break;
-                     case 4: feature4(esql); break;
-                     case 5: feature5(esql); break;
-                     case 6: feature6(esql); break;
-                     case 20: usermenu = false; break;
-                     default : System.out.println("Unrecognized choice!"); break;
-                }
-               }
+
               }
             }
          }//end while
@@ -371,6 +350,33 @@ public class AirlineManagement {
          }//end try
       }//end try
    }//end main
+
+   public static void Greeting(){
+      System.out.println(
+         "\n\n*******************************************************\n" +
+         "              User Interface      	               \n" +
+         "*******************************************************\n");
+   }//end Greeting
+
+   /*
+    * Reads the users choice given from the keyboard
+    * @int
+    **/
+   public static int readChoice() {
+      int input;
+      // returns only if a correct value is given.
+      do {
+         System.out.print("Please make your choice: ");
+         try { // read the integer, parse it and break.
+            input = Integer.parseInt(in.readLine());
+            break;
+         }catch (Exception e) {
+            System.out.println("Your input is invalid!");
+            continue;
+         }//end try
+      }while (true);
+      return input;
+   }//end readChoice
 
    public static void Greeting(){
       System.out.println(
@@ -484,7 +490,190 @@ public class AirlineManagement {
    public static void feature4(AirlineManagement esql) {}
    public static void feature5(AirlineManagement esql) {}
    public static void feature6(AirlineManagement esql) {}
-  
+
+   /*
+    * Customer Features
+    **/
+
+// Return departure and arrival time, number of stops scheduled, and on-time record (as a percentage)
+   public static void FindFlightsOnDate(AirlineManagement esql){
+      try {
+         System.out.print("\tEnter departure city: ");
+         String depCity = in.readline();
+         System.out.print("\tEnter arrival city: ");
+         String arrCity = in.readline();
+         System.out.print("\tEnter flight date (YYYY-MM-DD): ");
+         String flightDate = in.readline();
+
+         String query = String.format(
+            "SELECT s.DepartureTime, s.ArrivalTime, fi.NumOfStops, " + 
+            "ROUND(100.0 * SUM(CASE WHEN fi.DepartedOnTime AND fi.ArrivedOnTime THEN 1 ELSE 0 END) / COUNT(*), 2) AS OnTimePercentage " + 
+            "FROM Flight f JOIN Schedule s ON f.FlightNumber = s.FlightNumber " + 
+            "WHERE f.DepartureCity = '%s' AND f.ArrivalCity = '%s' AND fi.FlightDate = '%s' " + 
+            "GROUP BY s.DepartureTime, s.ArrivalTime, fi.NumeOfStops", 
+            depCity, arrCity, flightDate
+         );
+
+         int rowCount = esql.executeQuery(query);
+         System.out.println("Total row(s): " + rowCount);
+      } catch (Exception e) {
+         System.err.println(e.getMessage());
+      }
+   }
+
+   public static void GetTicketCost(AirlineManagement esql){
+      try {
+         System.out.print("\tEnter flight number: ");
+         String flightNumber = in.readline();
+         String query = 
+            "Select TicketCost FROM FlightInstance WHERE FlightNumber = '" + flightNumber + "'";
+
+         int rowCount = esql.executeQueryAndPrintResult(query);
+         System.out.println("Total row(s): " + rowCount);
+      } catch (Exception e) {
+         System.err.println(e.getMessage());
+      }
+   }
+
+   public static void GetAirplaneType(AirlineManagement esql) {
+      try {
+         System.out.print("\tEnter flight number: ");
+         String flightNumber = in.readline();
+
+         String query =  "
+         SELECT p.make, p.Model from Flight f 
+         JOIN Plane p ON f.PlaneID = p.PlaneID 
+         WHERE f.FlightNumber = '" + flightNumber + "'";
+
+         int rowCount = esql.executeQueryAndPrintResult(query);
+
+         System.out.println("Total row(s): " + rowCount);
+      } catch (Exception e) {
+         System.err.println(e.getMessage());
+      }
+   } 
+
+   public static void MakeReservation(AirlineManagement esql) {
+      try {
+         System.out.print("\tEnter customer ID: ");
+         System.out.print("\tEnter flight instance ID: ");
+         String flightInstanceID in.readline();
+
+         String checkSeats = "
+         SELECT SeatsTotal, SeatsSold 
+         FROM FlightInstance 
+         WHERE FlightInstance = " + flightInstanceID;
+
+         List<List<String>> result = esql.executeQueryAndReturnResults(checkSeats);
+
+         int total = Integer.parseInt(result.get(0).get(0));
+         int sold = Integer.parseInt(result.get(0).get(0));
+         String status = sold < total ? "reserved" : "waitlisted";
+
+         String reservationID = "R" + System.currentTimeMillis();
+         String insert = String.format(
+            "INSERT INTO Reservation (ReservationID, CustomerID, FlightInstanceID, Status) " + 
+            "VALUES ('%s', %s, %s, '%s')",
+            reservationID, customerID, flightInstanceID, status
+         );
+
+         esql.exectureUpdate(insert);
+         System.out.println("Reservation " + status + " created.");
+      } catch(Exception e) {
+         System.err.println(e.getMessage());
+      }
+   }
+
+   /*
+    * Technician Features
+    **/
+   public static void GetRepairsForPlane(AirlineManagement esql) {
+      try {
+         System.out.print("\tEnter plane ID: ");
+         String planeID = in.readLine();
+         System.out.print("\tEnter repair start date (YYYY-MM-DD): ");
+         String start = in.readLine();
+
+         String query = String.format(
+            "SELECT RepairDate, RepairCode
+            FROM Repair
+            WHERE PlaneID = '%s' AND RepairDate BETWEEN '%s' AND '%s'",
+            planeID, start, end
+         );
+         int rowCount = esql.executeQueryAndPrintResult(query);
+         System.out.println("Total row(s): " + rowCount);
+      } catch(Exception e) {
+         System.err.println(e.getMessage());
+      }
+   }
+
+   public static void GetPilotRequests(AirlineManagement esql) {
+      try {
+         System.out.print("\tEnter pilot ID: ");
+         String pilotID = in.readLine();
+
+         String query =
+            "SELECT RepairDate, RepairCode, PlaneID 
+            FROM MaintenanceRequest 
+            WHERE PilotID = '" + pilotID + "'";
+         int rowCount = esql.executeQueryAndPrintResult(query);
+         System.out.println("Total row(s): " + rowCount);
+      } catch(Exception e) {
+         System.err.println(e.getMessage());
+      }
+   }
+
+   public static void LogRepair(AirlineManagement esql) {
+      try {
+         System.out.print("\tEnter plane ID: ");
+         String planeID = in.readLine();
+         System.out.print("\tEnter repair code: ");
+         String repairCode = in.readLine();
+         System.out.print("\tEnter repair date (YYYY-MM-DD): ");
+         String repairDate = in.readLine();
+         System.out.print("\tEnter technician ID: ");
+         String techID = in.readLine();
+
+         String insert = String.format(
+            "INSERT INTO Repair (RepairID, PlaneID, RepairCode, RepairDate, TechnicianID) " + 
+            "VALUES (%s, '%s', '%s', '%s', '%s')",
+            esql.getCurrSeqVal("Repair_seq"), planeID, repairCode, repairDate, techID
+         );
+         int rowCount = esql.executeQueryAndPrintResult(query);
+         System.out.println("Total row(s): " + rowCount);
+      } catch(Exception e) {
+         System.err.println(e.getMessage());
+      }
+   }
+
+   /*
+    * Pilot Features
+    **/
+   public static void SubmitMaintenanceRequest(EmbeddedSSQL esql) {
+      try {
+         System.out.print("\tEnter plane ID: ");
+         String planeID = in.readLine();
+         System.out.print("\tEnter repair code: ");
+         String repairCode = in.readLine();
+         String requestDate = in.readLine();
+         System.out.print("\tEnter pilot ID: ");
+         String pilotID = in.readLine();
+
+         LocalDate today = LocalDate.now();
+         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+         String requestDate = today.format(formatter);
+
+         String insert = String.format("INSERT INTO MaintenanceRequest (RequestID, PlaneID, RepairCode, RequestCode, RequestDate, PilotID) " + 
+         "VALUES (%s, '%s', '%s', '%', '%s', '%s')",
+         esql.getCurrSeqVal("Request_seq"), planeID, repairCode, requestDate, pilotID
+         );
+
+         esql.executeUpdate(insert);
+         System.out.println("Maintenance request submitted.");
+      } catch(Exception e) {
+         System.err.println(e.getMessage());
+      }
+   }
 
 
 }//end AirlineManagement
