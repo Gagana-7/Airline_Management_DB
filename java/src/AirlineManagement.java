@@ -272,43 +272,87 @@ public class AirlineManagement {
                 System.out.println("---------");
 
                 //**the following functionalities should only be able to be used by Management**
-                System.out.println("1. View Flights");
-                System.out.println("2. View Flight Seats");
-                System.out.println("3. View Flight Status");
-                System.out.println("4. View Flights of the day");  
-                System.out.println("5. View Full Order ID History");
-                System.out.println(".........................");
-                System.out.println(".........................");
+                if (role.equals("Management")) {
+                  System.out.println("1. View Flights");
+                  System.out.println("2. View Flight Seats");
+                  System.out.println("3. View Flight Status");
+                  System.out.println("4. View Flights of the day");  
+                  System.out.println("5. View Full Order ID History");
+                  System.out.println(".........................");
+                  System.out.println(".........................");
+                }
+                
 
                 //**the following functionalities should only be able to be used by customers**
-                System.out.println("10. Search Flights");
+                if (role.equals("Customer")) {
+                System.out.println("1. Search Flights");
                 System.out.println(".........................");
                 System.out.println(".........................");
+               }
 
                 //**the following functionalities should ony be able to be used by Pilots**
-                System.out.println("15. Maintenace Request");
-                System.out.println(".........................");
-                System.out.println(".........................");
+                if (role.equals("Pilot")) {
+                  System.out.println("1. Maintenace Request");
+                  System.out.println(".........................");
+                  System.out.println(".........................");
+                }
+                
 
                //**the following functionalities should ony be able to be used by Technicians**
-                System.out.println(".........................");
-                System.out.println(".........................");
-
+               if (role.equals("Technician")) {
+                  System.out.println(".........................");
+                  System.out.println(".........................");
+               }
+                
                 System.out.println("20. Log out");
-                switch (readChoice()){
-                   case 1: feature1(esql); break;
-                   case 2: feature2(esql); break;
-                   case 3: feature3(esql); break;
-                   case 4: feature4(esql); break;
-                   case 5: feature5(esql); break;
-                   case 6: feature6(esql); break;
-
-
-
-
-                   case 20: usermenu = false; break;
-                   default : System.out.println("Unrecognized choice!"); break;
+                if (role.equals("Management")) {
+                  switch (readChoice()){
+                     case 1: feature1(esql); break;
+                     case 2: feature2(esql); break;
+                     case 3: feature3(esql); break;
+                     case 4: feature4(esql); break;
+                     case 5: feature5(esql); break;
+                     case 6: feature6(esql); break;
+                     case 20: usermenu = false; break;
+                     default : System.out.println("Unrecognized choice!"); break;
                 }
+               }
+                if (role.equals("Customer")) {
+                  switch (readChoice()){
+                     case 1: feature1(esql); break;
+                     case 2: feature2(esql); break;
+                     case 3: feature3(esql); break;
+                     case 4: feature4(esql); break;
+                     case 5: feature5(esql); break;
+                     case 6: feature6(esql); break;
+                     case 20: usermenu = false; break;
+                     default : System.out.println("Unrecognized choice!"); break;
+                }
+               }
+                if (role.equals("Pilot")) {
+                  switch (readChoice()){
+                     case 1: feature1(esql); break;
+                     case 2: feature2(esql); break;
+                     case 3: feature3(esql); break;
+                     case 4: feature4(esql); break;
+                     case 5: feature5(esql); break;
+                     case 6: feature6(esql); break;
+                     case 20: usermenu = false; break;
+                     default : System.out.println("Unrecognized choice!"); break;
+                }
+               }
+                if (role.equals("Technician")) {
+                  switch (readChoice()){
+                     case 1: feature1(esql); break;
+                     case 2: feature2(esql); break;
+                     case 3: feature3(esql); break;
+                     case 4: feature4(esql); break;
+                     case 5: feature5(esql); break;
+                     case 6: feature6(esql); break;
+                     case 20: usermenu = false; break;
+                     default : System.out.println("Unrecognized choice!"); break;
+                }
+               }
               }
             }
          }//end while
