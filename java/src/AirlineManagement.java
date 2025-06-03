@@ -281,7 +281,7 @@ public class AirlineManagement {
                   System.out.println("2. View Flight Seats");
                   System.out.println("3. View Flight Status");
                   System.out.println("4. View Flights of the day");  
-                  System.out.println("5. View Full Order ID History");
+                  System.out.println("5. View Passangers of Flight");
                   System.out.println(".........................");
                   System.out.println(".........................");
                   System.out.println("9. Log out");
@@ -290,6 +290,7 @@ public class AirlineManagement {
                      case 2: GetSeats(esql); break;
                      case 3: OnTime(esql); break;
                      case 4: FlightsOfTheDay(esql); break;
+                     case 5: ListPassangers(esql); break;
 
                      case 9: usermenu = false; break;
                      default : System.out.println("Unrecognized choice!"); break;
@@ -614,6 +615,53 @@ public class AirlineManagement {
          }
       } catch (Exception e) {
          System.err.println("Error in FlightsOfTheDay: "+  e.getMessage());
+      }
+   }
+
+   public static void ListPassangers(AirlineManagement esql) {
+      try {
+         System.out.println("Enter Flight: ");
+         String flName = in.readLine();
+         System.out.println("Enter Flight Date(YYYY-MM-DD): ");
+         String dateInput = in.readLine().trim(); //get string of date
+         LocalDate localDate = LocalDate.parse(dateInput); //parse string to LocalDate
+         Date sqlDate = Date.valueOf(localDate); //convert to java.sql.Date
+
+         System.out.println("Would you like to view: ");
+         System.out.println("(1) Passangers with reservations");
+         System.out.println("(2) Passangers on waitlist");
+         System.out.println("(3) Passangers who flew on the flight(if completed)");
+
+         String status;
+         switch(readChoice()) {
+            case 1: status = "reserved"; break;
+            case 2: status = "waitlist"; break;
+            case 3: status = "flown"; break;
+            default:
+               System.out.println("Invalid choice.");
+               return;
+         }
+
+         String query = String.format(
+            "SELECT c.FirstName, c.LastName " + 
+            "FROM Reservation r " +
+            "JOIN Customer c ON r.CustomerID = c.CustomerID " +
+            "JOIN FlightInstance fi ON r.FlightInstanceID = fi.FlightInstanceID " +
+            "JOIN Flight f ON fi.FlightNumber = f.FlightNumber " +
+            "WHERE f.FlightNumber = '%s' AND fi.FlightDate = '%s' AND r.Status = '%s';",
+            flName, sqlDate, status
+         );
+         List<List<String>> results = esql.executeQueryAndReturnResult(query);
+         if (results.isEmpty()) {
+            System.out.println("No passanger found with status: " + status);
+         } else {
+            for (List<String> row : results) {
+               System.out.println(String.join(" | ", row));
+            }
+         }
+
+      } catch (Exception e) {
+         System.err.println("Error is ListPassanger: " + e.getMessage());
       }
    }
 
