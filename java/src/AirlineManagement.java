@@ -277,7 +277,7 @@ public class AirlineManagement {
 
                 //**the following functionalities should only be able to be used by Management**
                 if (role.equals("Management")) {
-                  System.out.println("1. View Flight Schedule with Flight Number");
+                  System.out.println("1. View Flight Schedule");
                   System.out.println("2. View Flight Seats");
                   System.out.println("3. View Flight Status");
                   System.out.println("4. View Flights of the day");  
@@ -313,7 +313,7 @@ public class AirlineManagement {
                   switch (readChoice()){
                      case 1: ScheduleFromFlightNum(esql); break;
                      case 2: GetSeats(esql); break;
-                     case 3: feature3(esql); break;
+                     case 3: OnTime(esql); break;
                      case 4: feature4(esql); break;
                      case 5: feature5(esql); break;
                      case 6: feature6(esql); break;
@@ -549,7 +549,65 @@ public class AirlineManagement {
             System.out.println("Invalid choice.");
             break;
          }
+      } catch (Exception e) {
+         System.err.println("Error in GetSeats: " + e.getMessage());
+      }
+   }
+   public static void OnTime(AirlineManagement esql) {
+      try {
+         System.out.println("Enter Flight: ");
+         String flName = in.readLine();
+         System.out.println("Enter Flight Date(YYYY-MM-DD): ");
+         String dateInput = in.readLine().trim(); //get string of date
+         LocalDate localDate = LocalDate.parse(dateInput); //parse string to LocalDate
+         Date sqlDate = Date.valueOf(localDate); //convert to java.sql.Date
 
+         System.out.println("Do you want to view:");
+         System.out.println("(1) Departure");
+         System.out.println("(2) Arrival");
+
+         switch (readChoice()) {
+            case 1: {
+               String query = String.format(
+                  "SELECT DepartedOnTime FROM FlightInstance WHERE FlightNumber = '%s' AND FlightDate = '%s';",
+                  flName, sqlDate
+               );
+               List<List<String>> results = esql.executeQueryAndReturnResult(query);
+               if (results.isEmpty()) {
+                  System.out.println("No matching records found.");
+               } else {
+                  String departedStr = results.get(0).get(0);
+                  if (departedStr.equals("f")) {
+                     System.out.println("Did not depart on time");
+                  } else if (departedStr.equals("t")) {
+                     System.out.println("Departed on time");
+                  } else {
+                     System.out.println("Unknown departure status: " + departedStr);
+                  }
+               }
+               break;
+            }
+            case 2: {
+               String query = String.format(
+                  "SELECT ArrivedOnTime FROM FlightInstance WHERE FlightNumber = '%s' AND FlightDate = '%s';",
+                  flName, sqlDate
+               );
+               List<List<String>> results = esql.executeQueryAndReturnResult(query);
+               if (results.isEmpty()) {
+                  System.out.println("No matching records found.");
+               } else {
+                  String arrivedStr = results.get(0).get(0);
+                  if (arrivedStr.equals("f")) {
+                     System.out.println("Did not arrive on time");
+                  } else if (arrivedStr.equals("t")) {
+                     System.out.println("Arrived on time");
+                  } else {
+                     System.out.println("Unknown arrival status: " + arrivedStr);
+                  }
+               }
+               break;
+            }
+         }
       } catch (Exception e) {
          System.err.println("Error in GetSeats: " + e.getMessage());
       }
