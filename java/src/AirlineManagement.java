@@ -14,6 +14,8 @@
 import java.sql.DriverManager;
 import java.sql.Connection;
 import java.sql.Statement;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -24,6 +26,9 @@ import java.io.InputStreamReader;
 import java.util.List;
 import java.util.ArrayList;
 import java.lang.Math;
+
+import java.sql.Date;
+import java.time.LocalDate;
 
 /**
  * This class defines a simple embedded SQL utility class that is designed to
@@ -264,7 +269,6 @@ public class AirlineManagement {
                default : System.out.println("Unrecognized choice!"); break;
             }//end switch
             if (authorisedUser != null) {
-              String userID = authorisedUser[0];
               String role = authorisedUser[1];
               boolean usermenu = true;
               while(usermenu) {
@@ -273,7 +277,7 @@ public class AirlineManagement {
 
                 //**the following functionalities should only be able to be used by Management**
                 if (role.equals("Management")) {
-                  System.out.println("1. View Flights");
+                  System.out.println("1. View Flight Schedule with Flight Number");
                   System.out.println("2. View Flight Seats");
                   System.out.println("3. View Flight Status");
                   System.out.println("4. View Flights of the day");  
@@ -307,8 +311,8 @@ public class AirlineManagement {
                 System.out.println("20. Log out");
                 if (role.equals("Management")) {
                   switch (readChoice()){
-                     case 1: feature1(esql); break;
-                     case 2: feature2(esql); break;
+                     case 1: ScheduleFromFlightNum(esql); break;
+                     case 2: GetSeats(esql); break;
                      case 3: feature3(esql); break;
                      case 4: feature4(esql); break;
                      case 5: feature5(esql); break;
@@ -478,6 +482,78 @@ public class AirlineManagement {
 
 // Rest of the functions definition go in here
 
+   public static void ScheduleFromFlightNum(AirlineManagement esql) {
+      try {
+         System.out.println("Enter Flight Number: ");
+         String flNum = in.readLine();
+
+         String query = String.format(
+            "SELECT DayOfWeek, DepartureTime, ArrivalTime FROM schedule WHERE FlightNumber = '%s';",
+            flNum
+         );
+
+         List<List<String>> results = esql.executeQueryAndReturnResult(query);
+
+         if (results.isEmpty()) {
+            System.out.println("No schdule found for flight number " + flNum);
+         } else {
+            for (List<String> row : results) {
+               System.out.println(row);
+            }
+         }
+      } catch (Exception e) {
+         System.err.println("Error in ScheduleFromFlightNum: " + e.getMessage());
+      }
+   }
+   public static void GetSeats(AirlineManagement esql) {
+      try {
+         System.out.println("Enter Flight: ");
+         String flName = in.readLine();
+         System.out.println("Enter Flight Date(YYYY-MM-DD): ");
+         String dateInput = in.readLine().trim(); //get string of date
+         LocalDate localDate = LocalDate.parse(dateInput); //parse string to LocalDate
+         Date sqlDate = Date.valueOf(localDate); //convert to java.sql.Date
+
+         System.out.println("Do you want to view:");
+         System.out.println("(1) Number of Seats Sold");
+         System.out.println("(2) Number of Seats Remaining");
+
+         switch (readChoice()) {
+            case 1: {
+               String query = String.format(
+                  "SELECT SeatsSold FROM FlightInstance WHERE FlightNumber = '%s' AND FlightDate = '%s';",
+                  flName, sqlDate
+               );
+               List<List<String>> results = esql.executeQueryAndReturnResult(query);
+               if (results.isEmpty()) {
+                  System.out.println("No matching records found.");
+               } else {
+                  System.out.println("Seats Sold: " + results.get(0).get(0));
+               }
+               break;
+            }
+            case 2: {
+               String query = String.format(
+                  "SELECT SeatsTotal - SeatsSold FROM FlightInstance WHERE FlightNumber = '%s' AND FlightDate = '%s';", 
+                  flName, sqlDate
+                  );
+                  List<List<String>> results = esql.executeQueryAndReturnResult(query);
+                  if (results.isEmpty()) {
+                     System.out.println("No matching records found.");
+                  } else {
+                     System.out.println("Seats Remaining: " + results.get(0).get(0));
+                  }
+                  break;
+            }
+            default:
+            System.out.println("Invalid choice.");
+            break;
+         }
+
+      } catch (Exception e) {
+         System.err.println("Error in GetSeats: " + e.getMessage());
+      }
+   }
    public static void feature1(AirlineManagement esql) {}
    public static void feature2(AirlineManagement esql) {}
    public static void feature3(AirlineManagement esql) {}
