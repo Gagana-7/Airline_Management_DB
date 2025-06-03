@@ -314,7 +314,7 @@ public class AirlineManagement {
                      case 1: ScheduleFromFlightNum(esql); break;
                      case 2: GetSeats(esql); break;
                      case 3: OnTime(esql); break;
-                     case 4: feature4(esql); break;
+                     case 4: FlightsOfTheDay(esql); break;
                      case 5: feature5(esql); break;
                      case 6: feature6(esql); break;
                      case 20: usermenu = false; break;
@@ -610,6 +610,29 @@ public class AirlineManagement {
          }
       } catch (Exception e) {
          System.err.println("Error in GetSeats: " + e.getMessage());
+      }
+   }
+   public static void FlightsOfTheDay(AirlineManagement esql) {
+      try {
+         System.out.println("Enter Flight Date(YYYY-MM-DD): ");
+         String dateInput = in.readLine().trim(); //get string of date
+         LocalDate localDate = LocalDate.parse(dateInput); //parse string to LocalDate
+         Date sqlDate = Date.valueOf(localDate); //convert to java.sql.Date
+
+         String query = String.format(
+            "SELECT FlightNumber FROM FlightInstance WHERE FlightDate = '%s';", 
+            sqlDate
+            );
+         List<List<String>> results = esql.executeQueryAndReturnResult(query);
+         if (results.isEmpty()) {
+            System.out.println("No matching records found.");
+         } else {
+            for (List<String> row : results) {
+               System.out.println("Flight: "+ row);
+            }
+         }
+      } catch (Exception e) {
+         System.err.println("Error in FlightsOfTheDay: "+  e.getMessage());
       }
    }
    public static void feature1(AirlineManagement esql) {}
