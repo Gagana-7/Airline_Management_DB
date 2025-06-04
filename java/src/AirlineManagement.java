@@ -482,7 +482,7 @@ public class AirlineManagement {
             flNum
          );
 
-         List<List<String>> results = esql.executeQueryAndReturnResult(query);
+         List<List<String>> results = timeAndExecuteQuery(esql, query);
 
          if (results.isEmpty()) {
             System.out.println("No schdule found for flight number " + flNum);
@@ -514,7 +514,7 @@ public class AirlineManagement {
                   "SELECT SeatsSold FROM FlightInstance WHERE FlightNumber = '%s' AND FlightDate = '%s';",
                   flName, sqlDate
                );
-               List<List<String>> results = esql.executeQueryAndReturnResult(query);
+               List<List<String>> results = timeAndExecuteQuery(esql, query);
                if (results.isEmpty()) {
                   System.out.println("No matching records found.");
                } else {
@@ -527,7 +527,7 @@ public class AirlineManagement {
                   "SELECT SeatsTotal - SeatsSold FROM FlightInstance WHERE FlightNumber = '%s' AND FlightDate = '%s';", 
                   flName, sqlDate
                   );
-                  List<List<String>> results = esql.executeQueryAndReturnResult(query);
+                  List<List<String>> results = timeAndExecuteQuery(esql, query);
                   if (results.isEmpty()) {
                      System.out.println("No matching records found.");
                   } else {
@@ -562,7 +562,7 @@ public class AirlineManagement {
                   "SELECT DepartedOnTime FROM FlightInstance WHERE FlightNumber = '%s' AND FlightDate = '%s';",
                   flName, sqlDate
                );
-               List<List<String>> results = esql.executeQueryAndReturnResult(query);
+               List<List<String>> results = timeAndExecuteQuery(esql, query);
                if (results.isEmpty()) {
                   System.out.println("No matching records found.");
                } else {
@@ -582,7 +582,7 @@ public class AirlineManagement {
                   "SELECT ArrivedOnTime FROM FlightInstance WHERE FlightNumber = '%s' AND FlightDate = '%s';",
                   flName, sqlDate
                );
-               List<List<String>> results = esql.executeQueryAndReturnResult(query);
+               List<List<String>> results = timeAndExecuteQuery(esql, query);
                if (results.isEmpty()) {
                   System.out.println("No matching records found.");
                } else {
@@ -613,7 +613,7 @@ public class AirlineManagement {
             "SELECT FlightNumber FROM FlightInstance WHERE FlightDate = '%s';", 
             sqlDate
             );
-         List<List<String>> results = esql.executeQueryAndReturnResult(query);
+         List<List<String>> results = timeAndExecuteQuery(esql, query);
          if (results.isEmpty()) {
             System.out.println("No matching records found.");
          } else {
@@ -659,7 +659,7 @@ public class AirlineManagement {
             "WHERE f.FlightNumber = '%s' AND fi.FlightDate = '%s' AND r.Status = '%s';",
             flName, sqlDate, status
          );
-         List<List<String>> results = esql.executeQueryAndReturnResult(query);
+         List<List<String>> results = timeAndExecuteQuery(esql, query);
          if (results.isEmpty()) {
             System.out.println("No passanger found with status: " + status);
          } else {
@@ -687,7 +687,7 @@ public class AirlineManagement {
             resID
          );
 
-         List<List<String>> results = esql.executeQueryAndReturnResult(query);
+         List<List<String>> results = timeAndExecuteQuery(esql, query);
          if (results.isEmpty()) {
             System.out.println("No Passanger with reservation: " + resID);
          } else {
@@ -714,7 +714,7 @@ public class AirlineManagement {
             pNum
          );
 
-         List<List<String>> results = esql.executeQueryAndReturnResult(query);
+         List<List<String>> results = timeAndExecuteQuery(esql, query);
          if (results.isEmpty()) {
             System.out.println("No Plane: " + pNum);
          } else {
@@ -741,7 +741,7 @@ public class AirlineManagement {
             techID
          );
 
-         List<List<String>> results = esql.executeQueryAndReturnResult(query);
+         List<List<String>> results = timeAndExecuteQuery(esql, query);
          if (results.isEmpty()) {
             System.out.println("No repair by technician: " + techID);
          } else {
@@ -773,7 +773,7 @@ public class AirlineManagement {
             
          );
 
-         List<List<String>> results = esql.executeQueryAndReturnResult(query);
+         List<List<String>> results = timeAndExecuteQuery(esql, query);
          if (results.isEmpty()) {
             System.out.println("No repairs found for Plane ID: " + pID + " in the given date range.");
          } else {
@@ -808,7 +808,7 @@ public class AirlineManagement {
             flNum, start, end
          );
 
-         List<List<String>> results = esql.executeQueryAndReturnResult(query);
+         List<List<String>> results = timeAndExecuteQuery(esql, query);
          if (results.isEmpty()) {
             System.out.println("No flight statistics found.");
          } else {
@@ -1010,6 +1010,15 @@ public class AirlineManagement {
          System.err.println(e.getMessage());
       }
    }
+
+   public static List<List<String>> timeAndExecuteQuery(AirlineManagement esql, String query) throws Exception {
+      long start = System.nanoTime();
+      List<List<String>> results = esql.executeQueryAndReturnResult(query);
+      long end = System.nanoTime();
+      long ms = (end - start) / 1_000_000;
+      System.out.println("Query executed in " + ms + " ms.");
+      return results;
+  }
 
 
 }//end AirlineManagement
