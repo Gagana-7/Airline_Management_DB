@@ -551,7 +551,7 @@ public class AirlineManagement {
 
    public static void ScheduleFromFlightNum(AirlineManagement esql) {
       try {
-         System.out.println("Enter Flight Number: ");
+         System.out.print("\tEnter Flight Number: ");
          String flNum = in.readLine();
 
          String query = String.format(
@@ -574,9 +574,9 @@ public class AirlineManagement {
    }
    public static void GetSeats(AirlineManagement esql) {
       try {
-         System.out.println("Enter Flight: ");
+         System.out.print("\tEnter Flight: ");
          String flName = in.readLine();
-         System.out.println("Enter Flight Date(YYYY-MM-DD): ");
+         System.out.print("\tEnter Flight Date(YYYY-MM-DD): ");
          String dateInput = in.readLine().trim(); //get string of date
          LocalDate localDate = LocalDate.parse(dateInput); //parse string to LocalDate
          Date sqlDate = Date.valueOf(localDate); //convert to java.sql.Date
@@ -622,9 +622,9 @@ public class AirlineManagement {
    }
    public static void OnTime(AirlineManagement esql) {
       try {
-         System.out.println("Enter Flight: ");
+         System.out.print("\tEnter Flight: ");
          String flName = in.readLine();
-         System.out.println("Enter Flight Date(YYYY-MM-DD): ");
+         System.out.print("\tEnter Flight Date(YYYY-MM-DD): ");
          String dateInput = in.readLine().trim(); //get string of date
          LocalDate localDate = LocalDate.parse(dateInput); //parse string to LocalDate
          Date sqlDate = Date.valueOf(localDate); //convert to java.sql.Date
@@ -681,7 +681,7 @@ public class AirlineManagement {
    }
    public static void FlightsOfTheDay(AirlineManagement esql) {
       try {
-         System.out.println("Enter Flight Date(YYYY-MM-DD): ");
+         System.out.print("\tEnter Flight Date(YYYY-MM-DD): ");
          String dateInput = in.readLine().trim(); //get string of date
          LocalDate localDate = LocalDate.parse(dateInput); //parse string to LocalDate
          Date sqlDate = Date.valueOf(localDate); //convert to java.sql.Date
@@ -705,9 +705,9 @@ public class AirlineManagement {
 
    public static void ListPassangers(AirlineManagement esql) {
       try {
-         System.out.println("Enter Flight: ");
+         System.out.print("\tEnter Flight: ");
          String flName = in.readLine();
-         System.out.println("Enter Flight Date(YYYY-MM-DD): ");
+         System.out.print("\tEnter Flight Date(YYYY-MM-DD): ");
          String dateInput = in.readLine().trim(); //get string of date
          LocalDate localDate = LocalDate.parse(dateInput); //parse string to LocalDate
          Date sqlDate = Date.valueOf(localDate); //convert to java.sql.Date
@@ -753,7 +753,7 @@ public class AirlineManagement {
 
    public static void PassengerInfo(AirlineManagement esql) {
       try {
-         System.out.println("Enter reservation number: ");
+         System.out.print("\tEnter reservation number: ");
          String resID = in.readLine();
 
          String query = String.format(
@@ -781,7 +781,7 @@ public class AirlineManagement {
 
    public static void FindPlaneInfo(AirlineManagement esql) {
       try {
-         System.out.println("Enter plane number: ");
+         System.out.print("\tEnter plane number: ");
          String pNum = in.readLine();
 
          String query = String.format(
@@ -808,7 +808,7 @@ public class AirlineManagement {
 
    public static void RepairsOfPerson(AirlineManagement esql) {
       try {
-         System.out.println("Enter technician ID: ");
+         System.out.print("\tEnter technician ID: ");
          String techID = in.readLine();
 
          String query = String.format(
@@ -835,11 +835,11 @@ public class AirlineManagement {
 
    public static void RepairsOnDates(AirlineManagement esql) {
       try {
-         System.out.println("Enter Plane ID: ");
+         System.out.print("\tEnter Plane ID: ");
          String pID = in.readLine();
-         System.out.println("Enter start date (YYYY-MM-DD): ");
+         System.out.print("\tEnter start date (YYYY-MM-DD): ");
          String start = in.readLine().trim();
-         System.out.println("Enter end date (YYYY-MM-DD): ");
+         System.out.print("\tEnter end date (YYYY-MM-DD): ");
          String end = in.readLine().trim();
 
          String query = String.format(
@@ -867,11 +867,11 @@ public class AirlineManagement {
 
    public static void ShowFlightStats(AirlineManagement esql) {
       try {
-         System.out.println("Enter flight: ");
+         System.out.print("\tEnter flight: ");
          String flNum = in.readLine();
-         System.out.println("Enter start date(YYYY-MM-DD): ");
+         System.out.print("\tEnter start date(YYYY-MM-DD): ");
          String start = in.readLine().trim();
-         System.out.println("Enter end date (YYYY-MM-DD): ");
+         System.out.print("\tEnter end date (YYYY-MM-DD): ");
          String end = in.readLine().trim();
 
          String query = String.format(
