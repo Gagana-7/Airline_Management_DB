@@ -1,4 +1,5 @@
 -- Drop existing tables
+DROP TABLE IF EXISTS Users;
 DROP TABLE IF EXISTS MaintenanceRequest;
 DROP TABLE IF EXISTS Repair;
 DROP TABLE IF EXISTS Technician;
@@ -9,7 +10,7 @@ DROP TABLE IF EXISTS Schedule;
 DROP TABLE IF EXISTS Flight;
 DROP TABLE IF EXISTS Plane;
 DROP TABLE IF EXISTS Pilot;
-DROP TABLE IF EXISTS Users;
+DROP TABLE IF EXISTS UserRoles;
 
 -- Plane Table
 CREATE TABLE Plane (
@@ -109,10 +110,23 @@ CREATE TABLE MaintenanceRequest (
     FOREIGN KEY (PilotID) REFERENCES Pilot(PilotID)
 );
 
+CREATE TABLE UserRoles (
+    role TEXT PRIMARY KEY,
+    description TEXT
+);
+
 -- Added a User table for login
 CREATE TABLE Users (
     userID SERIAL PRIMARY KEY,
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
-    role TEXT CHECK(role IN ('Customer', 'Technician', 'Pilot', 'Management')) NOT NULL
+    role TEXT NOT NULL,
+    role_id TEXT,
+    FOREIGN KEY (role) REFERENCES UserRoles(role)
 );
+
+INSERT INTO UserRoles (role, description) VALUES
+  ('Customer', 'Flight customer'),
+  ('Technician', 'Aircraft technician'),
+  ('Pilot', 'Flight pilot'),
+  ('Management', 'Admin/manager');
