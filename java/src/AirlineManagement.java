@@ -256,7 +256,7 @@ public class AirlineManagement {
          boolean keepon = true;
          while(keepon) {
             // These are sample SQL statements
-            System.out.println("MAIN MENU");
+            System.out.println("\nMAIN MENU");
             System.out.println("---------");
             System.out.println("1. Create user");
             System.out.println("2. Log in");
@@ -269,10 +269,14 @@ public class AirlineManagement {
                default : System.out.println("Unrecognized choice!"); break;
             }//end switch
             if (authorisedUser != null) {
+              String userId = authorisedUser[0];
               String role = authorisedUser[1];
+              String roleId = authorisedUser[2];
+
+              System.out.println(roleId);
               boolean usermenu = true;
               while(usermenu) {
-                System.out.println("MAIN MENU");
+                System.out.println("\nMAIN MENU");
                 System.out.println("---------");
 
                 //**the following functionalities should only be able to be used by Management**
@@ -314,7 +318,7 @@ public class AirlineManagement {
                      case 1: FindFlightsOnDate(esql); break;
                      case 2: GetTicketCost(esql); break;
                      case 3: GetAirplaneType(esql); break;
-                     case 4: MakeReservation(esql); break;
+                     case 4: MakeReservation(esql, Integer.parseInt(roleId)); break;
 
                      case 0: usermenu = false; break;
                      default : System.out.println("Unrecognized choice!"); break;
@@ -323,12 +327,12 @@ public class AirlineManagement {
                   System.out.println("1. Send Maintenance Request");
                   System.out.println("0. Log out");
                   switch (readChoice()){
-                     case 1: SubmitMaintenanceRequest(esql); break;
+                     case 1: SubmitMaintenanceRequest(esql, roleId); break;
 
                      case 0: usermenu = false; break;
                      default : System.out.println("Unrecognized choice!"); break;
                   }
-                } else if (role.equals("Maintenance")) {
+                } else if (role.equals("Technician")) {
                   System.out.println("1. Get Repair History");
                   System.out.println("2. Get Pilot Maintenance Requests");
                   System.out.println("3. Mark A Repair As Completed");
@@ -336,7 +340,7 @@ public class AirlineManagement {
                   switch (readChoice()){
                      case 1: GetRepairsForPlane(esql); break;
                      case 2: GetPilotRequests(esql); break;
-                     case 3: LogRepair(esql); break;
+                     case 3: LogRepair(esql, roleId); break;
 
                      case 0: usermenu = false; break;
                      default : System.out.println("Unrecognized choice!"); break;
@@ -392,9 +396,8 @@ public class AirlineManagement {
     * Creates a new user
     **/
    public static void CreateUser(AirlineManagement esql){
-      System.out.println("CreateUser method called");
       try {
-         System.out.println("Enter username: ");
+         System.out.print("Enter username: ");
          String username = in.readLine();
 
          String checkQuery = String.format("SELECT * FROM Users WHERE username = '%s'", username);
@@ -402,33 +405,106 @@ public class AirlineManagement {
          if (!check.isEmpty()) {
             System.out.println("Username already exists. Please try a different one.");
             return;
-        }
+         }
 
-         System.out.println("Enter password: ");
+         System.out.print("Enter password: ");
          String password = in.readLine();
 
-         System.out.println("Enter role(Customer, Technician, Pilot, Management)");
+         System.out.print("Enter role (Customer, Technician, Pilot, Management): ");
          String role = in.readLine();
 
          // Validate role
-         if (!role.equalsIgnoreCase("Management") &&
-            !role.equalsIgnoreCase("Customer") &&
-            !role.equalsIgnoreCase("Pilot") &&
-            !role.equalsIgnoreCase("Technician")) {
-            System.out.println("Invalid role. Please enter one of: Management, Customer, Pilot, Technician");
-            return;
+         while (!role.equalsIgnoreCase("Management") &&
+               !role.equalsIgnoreCase("Customer") &&
+               !role.equalsIgnoreCase("Pilot") &&
+               !role.equalsIgnoreCase("Technician")) {
+            System.out.print("Invalid role. Please enter a valid role (Management, Customer, Pilot, Technician): ");
+            role = in.readLine();
          }
 
-         String insertQuery = String.format(
-            "INSERT INTO Users (username, password, role) VALUES ('%s', '%s', '%s');",
-            username, password, role
+         String roleID = "";
+
+         switch (role.toLowerCase()) {
+            case "technician":
+               String tPrefix = "T";
+               String tQuery = "SELECT COUNT(*) FROM Technician";
+               List<List<String>> tResult = esql.executeQueryAndReturnResult(tQuery);
+               int tCount = Integer.parseInt(tResult.get(0).get(0)) + 1;
+               roleID = String.format("%s%03d", tPrefix, tCount);
+
+               System.out.print("Enter technician name: ");
+               String tName = in.readLine();
+
+               String insertTech = String.format(
+                  "INSERT INTO Technician (TechnicianID, Name) VALUES ('%s', '%s')",
+                  roleID, tName
+               );
+               esql.executeUpdate(insertTech);
+               break;
+
+            case "pilot":
+               String pPrefix = "P";
+               String pQuery = "SELECT COUNT(*) FROM Pilot";
+               List<List<String>> pResult = esql.executeQueryAndReturnResult(pQuery);
+               int pCount = Integer.parseInt(pResult.get(0).get(0)) + 1;
+               roleID = String.format("%s%03d", pPrefix, pCount);
+
+               System.out.print("Enter pilot name: ");
+               String pName = in.readLine();
+
+               String insertPilot = String.format(
+                  "INSERT INTO Pilot (PilotID, Name) VALUES ('%s', '%s')",
+                  roleID, pName
+               );
+               esql.executeUpdate(insertPilot);
+               break;
+
+            case "customer":
+               String cQuery = "SELECT COUNT(*) FROM Customer";
+               List<List<String>> cResult = esql.executeQueryAndReturnResult(cQuery);
+               int cCount = Integer.parseInt(cResult.get(0).get(0)) + 1;
+               roleID = Integer.toString(cCount);
+
+               System.out.print("Enter first name: ");
+               String fName = in.readLine();
+               System.out.print("Enter last name: ");
+               String lName = in.readLine();
+               System.out.print("Enter Date of Birth (YYYY-MM-DD): ");
+               String dob = in.readLine();
+               System.out.print("Enter Gender (M/F): ");
+               String gender = in.readLine();
+               System.out.print("Enter Address: ");
+               String address = in.readLine();
+               System.out.print("Enter Phone Number (###-###-####): ");
+               String phone = in.readLine();
+               System.out.print("Enter ZIP code: ");
+               String zip = in.readLine();
+
+               String insertCustomer = String.format(
+                  "INSERT INTO Customer (CustomerID, FirstName, LastName, Gender, DOB, Address, Phone, Zip) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')",
+                  Integer.parseInt(roleID), fName, lName, gender, dob, address, phone, zip
+               );
+               esql.executeUpdate(insertCustomer);
+               break;
+
+            case "management":
+               roleID = null; // no role-specific ID
+               break;
+         }
+
+         String insertUser = String.format(
+            "INSERT INTO Users (username, password, role, role_id) VALUES ('%s', '%s', '%s', '%s')",
+            username, password, role.substring(0, 1).toUpperCase() + role.substring(1), roleID
          );
-         esql.executeUpdate(insertQuery);
-         System.out.println("User created successfully.");
+         esql.executeUpdate(insertUser);
+
+         System.out.println("\nUser created successfully!");
+
       } catch (Exception e) {
-         System.err.println((e.getMessage()));
+         System.err.println(e.getMessage());
       }
-   }//end CreateUser
+   }
+
 
 
    /*
@@ -436,34 +512,35 @@ public class AirlineManagement {
     * @return User login or null is the user does not exist
     **/
    public static String[] LogIn(AirlineManagement esql){
-      try {
-         System.out.println("Enter username: ");
-         String username = in.readLine();
+   try {
+      System.out.print("Enter username: ");
+      String username = in.readLine();
 
-         System.out.println("Enter password ");
-         String password = in.readLine();
+      System.out.print("Enter password: ");
+      String password = in.readLine();
 
-         String query = String.format(
-            "SELECT userID, role FROM Users WHERE username = '%s' AND password = '%s';",
-            username, password
-         );
+      String query = String.format(
+         "SELECT userID, role, role_id FROM Users WHERE username = '%s' AND password = '%s';",
+         username, password
+      );
 
-         List<List<String>> result = esql.executeQueryAndReturnResult(query);
+      List<List<String>> result = esql.executeQueryAndReturnResult(query);
 
-         if (result.size() > 0) {
-            System.out.println("Login successful! Welcome, " + username);
-            String userID = result.get(0).get(0);
-            String role = result.get(0).get(1);
-            return new String[]{userID, role};
-         } else {
-            System.out.println("Invalid username or password.");
-            return null;
-         }
-      } catch (Exception e) {
-         System.err.println(e.getMessage());
+      if (result.size() > 0) {
+         System.out.println("\nLogin successful! Welcome, " + username);
+         String userID = result.get(0).get(0);
+         String role = result.get(0).get(1);
+         String roleID = result.get(0).get(2);
+         return new String[]{userID, role, roleID}; // Includes prefix ID like T001, C003
+      } else {
+         System.out.println("\nInvalid username or password.");
          return null;
       }
-   }//end
+   } catch (Exception e) {
+      System.err.println(e.getMessage());
+      return null;
+   }
+}//end
 
 // Rest of the functions definition go in here
 
@@ -837,16 +914,23 @@ public class AirlineManagement {
          System.out.print("\tEnter flight date (YYYY-MM-DD): ");
          String flightDate = in.readLine();
 
-         String query = String.format(
-            "SELECT s.DepartureTime, s.ArrivalTime, fi.NumOfStops, " + 
-            "ROUND(100.0 * SUM(CASE WHEN fi.DepartedOnTime AND fi.ArrivedOnTime THEN 1 ELSE 0 END) / COUNT(*), 2) AS OnTimePercentage " + 
-            "FROM Flight f " + 
-            "JOIN Schedule s ON f.FlightNumber = s.FlightNumber " + 
-            "JOIN FlightInstance fi ON f.FlightNumber = fi.FlightNumber " + 
-            "WHERE f.DepartureCity = '%s' AND f.ArrivalCity = '%s' AND fi.FlightDate = '%s' " + 
-            "GROUP BY s.DepartureTime, s.ArrivalTime, fi.NumOfStops", 
-            depCity, arrCity, flightDate
-         );
+      String query = String.format(
+         "SELECT s.DepartureTime, s.ArrivalTime, fi.NumOfStops, " +
+         "AVG(CASE " +
+         "WHEN fi.DepartedOnTime AND fi.ArrivedOnTime THEN 100 " +
+         "WHEN fi.DepartedOnTime OR fi.ArrivedOnTime THEN 50 " +
+         "ELSE 0 END) AS OnTimePercentage " +
+         "FROM Flight f " +
+         "JOIN Schedule s ON f.FlightNumber = s.FlightNumber " +
+         "JOIN FlightInstance fi ON fi.FlightNumber = f.FlightNumber " +
+         "WHERE f.DepartureCity = '%s' " +
+         "AND f.ArrivalCity = '%s' " +
+         "AND fi.FlightDate = '%s' " +
+         "GROUP BY s.DepartureTime, s.ArrivalTime, fi.NumOfStops",
+         depCity, arrCity, flightDate
+      );
+
+         System.out.println("\n");
 
          int rowCount = esql.executeQueryAndPrintResult(query);
          System.out.println("Total row(s): " + rowCount);
@@ -860,7 +944,9 @@ public class AirlineManagement {
          System.out.print("\tEnter flight number: ");
          String flightNumber = in.readLine();
          String query = 
-            "Select TicketCost FROM FlightInstance WHERE FlightNumber = '" + flightNumber + "'";
+            "Select TicketCost, FlightDate FROM FlightInstance WHERE FlightNumber = '" + flightNumber + "'";
+
+         System.out.println("\n");
 
          int rowCount = esql.executeQueryAndPrintResult(query);
          System.out.println("Total row(s): " + rowCount);
@@ -879,33 +965,46 @@ public class AirlineManagement {
          "JOIN Plane p ON f.PlaneID = p.PlaneID " +
          "WHERE f.FlightNumber = '" + flightNumber + "'";
 
-         int rowCount = esql.executeQueryAndPrintResult(query);
+         System.out.println("\n");
 
-         System.out.println("Total row(s): " + rowCount);
+         esql.executeQueryAndPrintResult(query);
       } catch (Exception e) {
          System.err.println(e.getMessage());
       }
    } 
 
-   public static void MakeReservation(AirlineManagement esql) {
+   public static void MakeReservation(AirlineManagement esql, int customerID) {
       try {
-         System.out.print("\tEnter customer ID: ");
-         String customerID = in.readLine();
          System.out.print("\tEnter flight instance ID: ");
          String flightInstanceID = in.readLine();
 
          String checkSeats = 
          "SELECT SeatsTotal, SeatsSold " +
          "FROM FlightInstance " +
-         "WHERE FlightInstance = " + flightInstanceID;
+         "WHERE FlightInstanceID = " + flightInstanceID;
 
          List<List<String>> result = esql.executeQueryAndReturnResult(checkSeats);
 
          int total = Integer.parseInt(result.get(0).get(0));
-         int sold = Integer.parseInt(result.get(0).get(0));
-         String status = sold < total ? "reserved" : "waitlisted";
+         int sold = Integer.parseInt(result.get(0).get(1));
+         String status = sold < total ? "reserved" : "waitlist";
 
-         String reservationID = "R" + System.currentTimeMillis();
+         String countQuery = "SELECT COUNT(*) FROM Reservation";
+         List<List<String>> countResult = esql.executeQueryAndReturnResult(countQuery);
+         int count = Integer.parseInt(countResult.get(0).get(0));
+
+         String parsedCount = "";
+         if (count < 10) {
+            parsedCount = "000" + (count + 1);
+         } else if (count < 100) {
+            parsedCount = "00" + (count + 1);
+         } else if (count < 1000) {
+            parsedCount = "0" + (count + 1);
+         } else {
+            parsedCount = Integer.toString(count + 1);
+         }
+         String reservationID = "R" + (parsedCount);
+
          String insert = String.format(
             "INSERT INTO Reservation (ReservationID, CustomerID, FlightInstanceID, Status) " + 
             "VALUES ('%s', %s, %s, '%s')",
@@ -913,8 +1012,16 @@ public class AirlineManagement {
          );
 
          esql.executeUpdate(insert);
-         System.out.println("Reservation " + status + " created.");
+
+         if (status.equals("waitlist")) {
+            System.out.println("\nFlight " + flightInstanceID + " is full. You are now on the waitlist for this flight.");
+         } else if (status.equals("reserved")) {
+            System.out.println("\nReservation successfully created for Flight " + flightInstanceID + ".");
+         }
+
+         System.out.println("Confirmation Number: " + reservationID);
       } catch(Exception e) {
+         System.out.println("Failed to create reservation");
          System.err.println(e.getMessage());
       }
    }
@@ -950,9 +1057,12 @@ public class AirlineManagement {
          String pilotID = in.readLine();
 
          String query =
-            "SELECT RepairDate, RepairCode, PlaneID " +
+            "SELECT RequestDate, RepairCode, PlaneID " +
             "FROM MaintenanceRequest " + 
             "WHERE PilotID = '" + pilotID + "'";
+
+         System.out.println("\n");
+
          int rowCount = esql.executeQueryAndPrintResult(query);
          System.out.println("Total row(s): " + rowCount);
       } catch(Exception e) {
@@ -960,24 +1070,31 @@ public class AirlineManagement {
       }
    }
 
-   public static void LogRepair(AirlineManagement esql) {
+   public static void LogRepair(AirlineManagement esql, String techID) {
       try {
          System.out.print("\tEnter plane ID: ");
          String planeID = in.readLine();
          System.out.print("\tEnter repair code: ");
          String repairCode = in.readLine();
-         System.out.print("\tEnter repair date (YYYY-MM-DD): ");
-         String repairDate = in.readLine();
-         System.out.print("\tEnter technician ID: ");
-         String techID = in.readLine();
+
+         LocalDate today = LocalDate.now();
+         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+         String repairDate = today.format(formatter);
+
+         String countQuery = "SELECT COUNT(*) FROM Repair";
+         List<List<String>> countResult = esql.executeQueryAndReturnResult(countQuery);
+         int repairID = Integer.parseInt(countResult.get(0).get(0)) + 1;
 
          String insert = String.format(
             "INSERT INTO Repair (RepairID, PlaneID, RepairCode, RepairDate, TechnicianID) " + 
             "VALUES (%s, '%s', '%s', '%s', '%s')",
-            esql.getCurrSeqVal("Repair_seq"), planeID, repairCode, repairDate, techID
+            repairID, planeID, repairCode, repairDate, techID
          );
-         int rowCount = esql.executeQueryAndPrintResult(insert);
-         System.out.println("Total row(s): " + rowCount);
+         esql.executeUpdate(insert);
+
+         System.out.println("\n");
+
+         System.out.println("\nMaintenance on " + planeID + " with Repair Code: " + repairCode + " marked as completed." );
       } catch(Exception e) {
          System.err.println(e.getMessage());
       }
@@ -986,26 +1103,28 @@ public class AirlineManagement {
    /*
     * Pilot Features
     **/
-   public static void SubmitMaintenanceRequest(AirlineManagement esql) {
+   public static void SubmitMaintenanceRequest(AirlineManagement esql, String pilotID) {
       try {
          System.out.print("\tEnter plane ID: ");
          String planeID = in.readLine();
          System.out.print("\tEnter repair code: ");
          String repairCode = in.readLine();
-         System.out.print("\tEnter pilot ID: ");
-         String pilotID = in.readLine();
 
          LocalDate today = LocalDate.now();
          DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
          String requestDate = today.format(formatter);
 
-         String insert = String.format("INSERT INTO MaintenanceRequest (RequestID, PlaneID, RepairCode, RequestCode, RequestDate, PilotID) " + 
-         "VALUES (%s, '%s', '%s', '%', '%s', '%s')",
-         esql.getCurrSeqVal("Request_seq"), planeID, repairCode, requestDate, pilotID
+         String countQuery = "SELECT COUNT(*) FROM MaintenanceRequest";
+         List<List<String>> countResult = esql.executeQueryAndReturnResult(countQuery);
+         int requestID = Integer.parseInt(countResult.get(0).get(0)) + 1;
+
+         String insert = String.format("INSERT INTO MaintenanceRequest (RequestID, PlaneID, RepairCode, RequestDate, PilotID) " + 
+         "VALUES (%s, '%s', '%s', '%s', '%s')",
+         requestID, planeID, repairCode, requestDate, pilotID
          );
 
          esql.executeUpdate(insert);
-         System.out.println("Maintenance request submitted.");
+         System.out.println("\nMaintenance Request for " + planeID + " with Repair Code: " + repairCode + " has been submitted.");
       } catch(Exception e) {
          System.err.println(e.getMessage());
       }
